@@ -28,7 +28,7 @@ const Program = struct {
     desc: []const u8,
 };
 
-fn getModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) *std.Build.Module {
+fn getModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, platform: PlatformBackend) *std.Build.Module {
     if (b.modules.contains("raylib")) {
         return b.modules.get("raylib").?;
     }
@@ -36,28 +36,35 @@ fn getModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.buil
         .root_source_file = b.path("lib/raylib.zig"),
         .target = target,
         .optimize = optimize,
-        .link_libc = true,
+        // nxdk (Xbox) targets are freestanding:
+        // the C runtime comes from nxdk's pdclib/xboxrt modules
+        .link_libc = platform != .xbox,
     });
 }
 
 const gui = struct {
-    fn getModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) *std.Build.Module {
-        const raylib = this.getModule(b, target, optimize);
+    fn getModule(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, platform: PlatformBackend) *std.Build.Module {
+        const raylib = this.getModule(b, target, optimize, platform);
         return b.addModule("raygui", .{
             .root_source_file = b.path("lib/raygui.zig"),
             .imports = &.{.{ .name = "raylib-zig", .module = raylib }},
             .target = target,
             .optimize = optimize,
-            .link_libc = true,
+            .link_libc = platform != .xbox,
         });
     }
 };
 
 pub fn build(b: *std.Build) !void {
-    const target = b.standardTargetOptions(.{});
+    const options = Options.getOptions(b);
+
+    const target =
+        if (options.platform == .xbox)
+            b.resolveTargetQuery(@import("nxdk_zig").target_query)
+        else
+            b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const options = Options.getOptions(b);
     const raylib_dep = b.dependency("raylib", .{
         .target = target,
         .optimize = optimize,
@@ -89,13 +96,16 @@ pub fn build(b: *std.Build) !void {
     defer raylib_headers.deinit();
 
     for (raylib_artifact.installed_headers.items) |item| {
-        try raylib_headers.put(item.file.dest_rel_path, item.file.source);
+        switch (item) {
+            .file => |f| try raylib_headers.put(f.dest_rel_path, item.file.source),
+            .directory => {},
+        }
     }
 
     b.installArtifact(raylib_artifact);
 
-    const raylib = this.getModule(b, target, optimize);
-    const raygui = this.gui.getModule(b, target, optimize);
+    const raylib = this.getModule(b, target, optimize, options.platform);
+    const raygui = this.gui.getModule(b, target, optimize, options.platform);
 
     raylib.linkLibrary(raylib_artifact);
 
@@ -555,13 +565,13 @@ pub fn build(b: *std.Build) !void {
     const raylib_test = b.addTest(.{
         .root_module = raylib,
     });
-    raylib_test.root_module.link_libc = true;
+    raylib_test.root_module.link_libc = options.platform != .xbox;
 
     const raygui_test = b.addTest(.{
         .root_module = raygui,
     });
     raygui_test.root_module.addImport("raylib-zig", raylib);
-    raygui_test.root_module.link_libc = true;
+    raygui_test.root_module.link_libc = options.platform != .xbox;
 
     const test_step = b.step("test", "Check for library compilation errors");
     test_step.dependOn(&raylib_test.step);

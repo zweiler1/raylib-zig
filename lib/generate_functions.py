@@ -443,7 +443,7 @@ def parse_header(header_name: str, output_file: str, ext_file: str, prefix: str,
         zig_c_arguments = ", ".join(zig_c_arguments)
 
         ext_ret = add_namespace_to_type(return_type)
-        ext_heads.append(f"pub extern \"c\" fn {func_name}({zig_c_arguments}) {ext_ret};")
+        ext_heads.append(f"pub extern fn {func_name}({zig_c_arguments}) {ext_ret};")
 
         func_prelude = ""
 
