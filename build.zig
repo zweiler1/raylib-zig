@@ -58,11 +58,12 @@ const gui = struct {
 pub fn build(b: *std.Build) !void {
     const options = Options.getOptions(b);
 
+    const standard_target = b.standardTargetOptions(.{});
     const target =
         if (options.platform == .xbox)
             b.resolveTargetQuery(@import("nxdk_zig").target_query)
         else
-            b.standardTargetOptions(.{});
+            standard_target;
     const optimize = b.standardOptimizeOption(.{});
 
     const raylib_dep = b.dependency("raylib", .{

@@ -12,12 +12,12 @@
             .hash = "N-V-__8AAJl1DwBezhYo_VE6f53mPVm00R-Fk28NPW7P14EQ",
         },
         .raylib = .{
-            .url = "git+https://github.com/zweiler1/raylib?ref=xbox#5d9b5b9cc9ca67f56018bcb75c4c722b8736a646",
-            .hash = "raylib-6.0.0-whq8uCAqOQU1Rgz5I7w1ZuSNPjXf0xj3qvEIBlbnb56f",
+            .url = "git+https://github.com/zweiler1/raylib?ref=xbox#9435b1cfe99e4cd7b93374961f19ec0edede76c5",
+            .hash = "raylib-6.0.0-whq8uCAqOQXHRAvOGdHsBfoY8LiXEIiqJxzO21Trcd9B",
         },
         .nxdk_zig = .{
-            .url = "git+https://github.com/zweiler2/nxdk_zig.git#fbde653cb18891f72f16698cc2722c0b835cdf56",
-            .hash = "nxdk_zig-0.0.1-BbFuWRYKCQD28vLfLfS6Vl1EdFyfwvp-yQuo71Inexvc",
+            .url = "git+https://github.com/zweiler2/nxdk_zig.git#63fa287f9c6397161e2c5d078ed5ff5a4897311f",
+            .hash = "nxdk_zig-0.0.1-BbFuWaoVCQC6No6W427vvApjTElfWJQ4JEA0oMIwzOQQ",
             .lazy = true,
         },
     },
